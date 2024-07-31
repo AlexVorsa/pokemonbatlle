@@ -22,6 +22,7 @@ def browser():
     chrome_options.add_argument("--disable-extensions") # disabling extensions
     chrome_options.add_argument("--disable-gpu") #  applicable to windows os only
     chrome_options.add_argument("--disable-dev-shm-usage") # overcome limited resource problems
+    chrome_options.add_argument("--disable-search-engine-choice-screen")
     # chrome_options.add_argument("--headless")
 
     service = Service()
