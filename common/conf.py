@@ -1,4 +1,7 @@
 class Cfg:
+    """
+    Configuration class
+    """
     URL ='https://pokemonbattle-stage.ru'
     API_URL = 'https://api.pokemonbattle-stage.ru/v2'
     VALID = {

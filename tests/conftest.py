@@ -33,8 +33,14 @@ def browser():
 
 @pytest.fixture(scope="function")
 def knockout():
-    HEADER = {'Content-Type':'application/json','trainer_token': Cfg.TRAINER_TOKEN}
-    pokemons = requests.get(url=f'{Cfg.API_URL}/pokemons', params={"trainer_id": Cfg.TRAINER_ID},  headers=HEADER)
-    for pokemon in pokemons.json()['data']:
-        if pokemon['status'] != 0:
-            requests.post(url=f'{Cfg.API_URL}/pokemons/knockout', headers=HEADER, json={"pokemon_id": pokemon['id']})
+    """
+    Knockout all pokemons
+    """
+    header = {'Content-Type':'application/json','trainer_token': Cfg.TRAINER_TOKEN}
+    pokemons = requests.get(url=f'{Cfg.API_URL}/pokemons', params={"trainer_id": Cfg.TRAINER_ID},
+                            headers=header, timeout=3)
+    if 'data' in pokemons.json():
+        for pokemon in pokemons.json()['data']:
+            if pokemon['status'] != 0:
+                requests.post(url=f'{Cfg.API_URL}/pokemons/knockout', headers=header,
+                              json={"pokemon_id": pokemon['id']}, timeout=3)

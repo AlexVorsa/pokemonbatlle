@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from common.conf import Cfg
+from common.utils import wait_for
 
 
 def test_positive_login(browser):
@@ -46,6 +47,10 @@ def test_negative_login(case, email, password, exp_alert, browser):
     """
     POC-2. Negative cases for login
     """
+    def check_alerts(browser):
+        alerts = browser.find_elements(by=By.CSS_SELECTOR, value='[class*="auth__error"]')
+        return [alert.text for alert in alerts]
+
     browser.get(url=Cfg.URL)
 
     email_input = WebDriverWait(browser, timeout=10, poll_frequency=2).until(
@@ -60,11 +65,7 @@ def test_negative_login(case, email, password, exp_alert, browser):
     enter_button = browser.find_element(by=By.CSS_SELECTOR, value='[class*="send_auth"]')
     enter_button.click()
 
-    alerts = WebDriverWait(browser, timeout=10, poll_frequency=2).until(
-        EC.presence_of_all_elements_located((By.CSS_SELECTOR, '[class*="auth__error"]')))
-
-    alert_list = [alert.text for alert in alerts]  
-    assert alert_list == exp_alert, 'Unexpected alert message'
+    assert wait_for(lambda: check_alerts(browser) == exp_alert)(), 'Unexpected alert message'
 
 
 def test_check_api(browser, knockout):
@@ -93,18 +94,16 @@ def test_check_api(browser, knockout):
     pokemon_count_before = browser.find_element(by=By.CSS_SELECTOR, value='[class="pokemons-info"] [class*="total-count"]')
     count_before = int(pokemon_count_before.text)
 
-    body_create = {  
+    body_create = {
         "name": "generate",
         "photo_id": 1
     }
-    HEADER = {'Content-Type':'application/json','trainer_token': Cfg.TRAINER_TOKEN}
-    response_create = requests.post(url=f'{Cfg.API_URL}/pokemons', headers=HEADER, json=body_create)
-    
+    header = {'Content-Type':'application/json','trainer_token': Cfg.TRAINER_TOKEN}
+    response_create = requests.post(url=f'{Cfg.API_URL}/pokemons', headers=header, json=body_create, timeout=3)
     assert response_create.status_code == 201, 'Unexpected response status_code'
 
     browser.refresh()
 
-    pokemon_count_after = browser.find_element(by=By.CSS_SELECTOR, value='[class="pokemons-info"] [class*="total-count"]')
-    count_after = int(pokemon_count_after.text)
-
-    assert count_after - count_before == 1, 'Unexpected pokemons count'
+    assert WebDriverWait(browser, timeout=5, poll_frequency=1).until(EC.text_to_be_present_in_element(
+        (By.CSS_SELECTOR, '[class="pokemons-info"] [class*="total-count"]'), f'{count_before+1}')), \
+            'Unexpected pokemons count'
