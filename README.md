@@ -3,7 +3,7 @@ To do homework at the QA Studio school
 
 ``` bash
 python -m venv env
-source ./env/bin/activate
+source ./env/bin/activate # or .\env\Scripts\Activate.ps1 or .\env\Scripts\activate
 pip install -r requirements.txt
 ```
 
